@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Edit College{% endblock %}
+
+{% block content %}
+<div class="generator-container">
+    <header class="generator-header">
+        <h1>Edit College Data</h1>
+    </header>
+
+    <form class="generator-form" method="POST" action="{{ url_for('admin.edit_college', college_id=college._id) }}">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="college-name">College Name</label>
+                <input type="text" id="college-name" name="college_name" value="{{ college.college_name }}">
+            </div>
+            <div class="form-group">
+                <label for="coordinate">Coordinates</label>
+                <input type="text" id="coordinate" name="coordinate" value="{{ college.coordinate }}">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="submit-btn">Update</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

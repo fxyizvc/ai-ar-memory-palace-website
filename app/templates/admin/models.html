@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}3D Models Library{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="header-section">
+        <h2 class="page-title">3D Models</h2>
+        
+        <div class="selector-group">
+            <select id="collegeSelect" onchange="filterContent()">
+                <option value="" selected disabled>Select College...</option>
+                {% for college in colleges %}
+                <option value="{{ college }}">{{ college }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="branchSelect" onchange="filterContent()">
+                <option value="All">All Branches</option>
+                {% for branch in branches %}
+                <option value="{{ branch }}">{{ branch }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div id="mainContent" style="display:none;">
+        <div class="tabs-header">
+            {% for i in range(1, 9) %}
+            <button class="tab-btn {{ 'active' if i == 1 else '' }}" onclick="openSemester(event, 'Sem{{ i }}')">
+                S{{ i }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <div class="tabs-body">
+            {% for i in range(1, 9) %}
+            {% set sem_key = i|string %}
+            <div id="Sem{{ i }}" class="tab-content" style="display: {{ 'block' if i == 1 else 'none' }};">
+                <div class="model-grid">
+                    {% for asset in models_by_sem[sem_key] %}
+                    <div class="model-card" data-college="{{ asset.college_name }}" data-branch="{{ asset.branch }}">
+                        <div class="model-icon">3D</div>
+                        <div class="model-info">
+                            <h3 title="{{ asset.filename }}">{{ asset.filename }}</h3>
+                            {% if asset.glb_id %}
+                            <button onclick="showModelPopup('{{ asset.glb_id }}', '{{ asset.filename }}')" class="btn-open">View</button>
+                            {% else %}
+                            <span class="error-text">ID Missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="empty-msg" style="display:none;">No models found for this selection.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="placeholder" class="empty-state">
+        <p>Please select a college to view 3D models.</p>
+    </div>
+</div>
+
+<div id="modelModal" class="modal-overlay" onclick="closeModelPopup(event)">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModelPopup(event)">&times;</span>
+        <h3 id="modalTitle">Model View</h3>
+        <model-viewer id="popupViewer" src="" alt="3D Model" auto-rotate camera-controls shadow-intensity="1" style="width: 100%; height: 400px; background-color: #f0f0f0; border-radius: 8px;"></model-viewer>
+    </div>
+</div>
+
+<style>
+    /* CSS matched to Materials.html */
+    .header-section { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .selector-group { display: flex; gap: 10px; }
+    .selector-group select { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 2px solid #007bff; min-width: 180px; }
+    
+    .tabs-header { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; overflow-x: auto; }
+    .tab-btn { flex: 1; padding: 15px; border: none; background: none; font-size: 1.1em; cursor: pointer; color: #555; font-weight: bold; border-bottom: 3px solid transparent; min-width: 50px; }
+    .tab-btn.active { border-bottom: 3px solid #007bff; color: #007bff; }
+    
+    .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    
+    /* Card design matched to Materials */
+    .model-card { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .model-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    
+    /* Blue version of the PDF icon */
+    .model-icon { background: #e3f2fd; color: #1976d2; padding: 30px; font-size: 24px; font-weight: bold; }
+    
+    .model-info { padding: 15px; }
+    .model-info h3 { font-size: 0.9em; margin: 0 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* Button design matched to Materials */
+    .btn-open { display: block; width: 100%; padding: 8px; background: #333; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.9em; border: none; cursor: pointer; }
+    
+    .empty-state { text-align: center; padding: 50px; color: #888; background: #f9f9f9; border-radius: 8px; }
+    .empty-msg { text-align: center; color: #999; margin-top: 20px; width: 100%; grid-column: 1 / -1; }
+
+    /* Modal Styling */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 90%; max-width: 700px; padding: 20px; border-radius: 10px; position: relative; }
+    .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; }
+</style>
+
+<script>
+    function filterContent() {
+        const college = document.getElementById("collegeSelect").value;
+        const branch = document.getElementById("branchSelect").value;
+        if (!college) return;
+
+        document.getElementById("placeholder").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+
+        document.querySelectorAll(".model-card").forEach(card => {
+            const matchesCollege = card.dataset.college === college;
+            const matchesBranch = (branch === "All" || card.dataset.branch === branch);
+            card.style.display = (matchesCollege && matchesBranch) ? "block" : "none";
+        });
+        updateEmptyMessages();
+    }
+
+    function updateEmptyMessages() {
+        document.querySelectorAll(".tab-content").forEach(tab => {
+            let visibleCount = 0;
+            tab.querySelectorAll(".model-card").forEach(c => {
+                if (c.style.display !== "none") visibleCount++;
+            });
+            const msg = tab.querySelector(".empty-msg");
+            if (msg) msg.style.display = (visibleCount === 0) ? "block" : "none";
+        });
+    }
+
+    function openSemester(evt, semesterId) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+        document.getElementById(semesterId).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function showModelPopup(glbId, filename) {
+        const modal = document.getElementById("modelModal");
+        const viewer = document.getElementById("popupViewer");
+        document.getElementById("modalTitle").innerText = filename;
+        viewer.src = `/admin/serve_model/${glbId}`;
+        modal.style.display = "flex";
+    }
+
+    function closeModelPopup(event) {
+        if (event.target.id === "modelModal" || event.target.className === "close-btn") {
+            document.getElementById("modelModal").style.display = "none";
+            document.getElementById("popupViewer").src = ""; 
+        }
+    }
+</script>
+{% endblock %}

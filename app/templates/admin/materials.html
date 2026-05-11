@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Materials Library{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="header-section">
+        <h2 class="page-title">Course Materials</h2>
+        
+        <div class="selector-group">
+            <select id="collegeSelect" onchange="filterContent()">
+                <option value="" selected disabled>Select College...</option>
+                {% for college in colleges %}
+                <option value="{{ college }}">{{ college }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="branchSelect" onchange="filterContent()">
+                <option value="All">All Branches</option>
+                {% for branch in branches %}
+                <option value="{{ branch }}">{{ branch }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div id="mainContent" style="display:none;">
+        <div class="tabs-header">
+            {% for i in range(1, 9) %}
+            <button class="tab-btn {{ 'active' if i == 1 else '' }}" onclick="openSemester(event, 'Sem{{ i }}')">
+                S{{ i }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <div class="tabs-body">
+            {% for i in range(1, 9) %}
+            {% set sem_key = i|string %}
+            <div id="Sem{{ i }}" class="tab-content" style="display: {{ 'block' if i == 1 else 'none' }};">
+                <div class="pdf-grid">
+                    {% for asset in materials_by_sem[sem_key] %}
+                    <div class="pdf-card" data-college="{{ asset.college_name }}" data-branch="{{ asset.branch }}">
+                        <div class="pdf-icon">PDF</div>
+                        <div class="pdf-info">
+                            <h3 title="{{ asset.filename }}">{{ asset.filename }}</h3>
+                            <a href="{{ asset.pdf_url }}" target="_blank" class="btn-open">View</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="empty-msg" style="display:none;">No materials found for this selection.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="placeholder" class="empty-state">
+        <p>Please select a college to view materials.</p>
+    </div>
+</div>
+
+<style>
+    .header-section { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .selector-group { display: flex; gap: 10px; }
+    .selector-group select { padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 2px solid #007bff; min-width: 180px; }
+    .tabs-header { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; overflow-x: auto; }
+    .tab-btn { flex: 1; padding: 15px; border: none; background: none; font-size: 1.1em; cursor: pointer; color: #555; font-weight: bold; border-bottom: 3px solid transparent; min-width: 50px; }
+    .tab-btn.active { border-bottom: 3px solid #007bff; color: #007bff; }
+    .pdf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    .pdf-card { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .pdf-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .pdf-icon { background: #ffebee; color: #d32f2f; padding: 30px; font-size: 24px; font-weight: bold; }
+    .pdf-info { padding: 15px; }
+    .pdf-info h3 { font-size: 0.9em; margin: 0 0 10px; white-space: nowrap; overflow: hidden;  text-overflow: ellipsis; color: #000000}
+    .btn-open { display: block; padding: 8px; background: #333; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.9em; }
+    .empty-state { text-align: center; padding: 50px; color: #888; background: #f9f9f9; border-radius: 8px; }
+    .empty-msg { text-align: center; color: #999; margin-top: 20px; width: 100%; grid-column: 1 / -1; }
+</style>
+
+<script>
+    function filterContent() {
+        const selectedCollege = document.getElementById("collegeSelect").value;
+        const selectedBranch = document.getElementById("branchSelect").value;
+        if (!selectedCollege) return;
+
+        document.getElementById("placeholder").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+
+        const allCards = document.querySelectorAll(".pdf-card");
+        allCards.forEach(card => {
+            const cardCollege = card.getAttribute("data-college");
+            const cardBranch = card.getAttribute("data-branch");
+            
+            const matchesCollege = cardCollege === selectedCollege;
+            const matchesBranch = (selectedBranch === "All" || cardBranch === selectedBranch);
+
+            card.style.display = (matchesCollege && matchesBranch) ? "block" : "none";
+        });
+
+        updateEmptyMessages();
+    }
+
+    function updateEmptyMessages() {
+        document.querySelectorAll(".tab-content").forEach(tab => {
+            let visibleCount = 0;
+            tab.querySelectorAll(".pdf-card").forEach(c => {
+                if (c.style.display !== "none") visibleCount++;
+            });
+            const msg = tab.querySelector(".empty-msg");
+            if (msg) msg.style.display = (visibleCount === 0) ? "block" : "none";
+        });
+    }
+
+    function openSemester(evt, semesterId) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+        document.getElementById(semesterId).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+{% endblock %}

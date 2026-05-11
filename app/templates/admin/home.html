@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Memory Site{% endblock %}
+
+{% block content %}
+<div class="form" style="max-width: 800px; width: 95%; margin: 100px auto; padding: 60px 40px; text-align: center;">
+    
+    <h1 class="hero-welcome">
+        Welcome!
+    </h1>
+    
+    <p style="color: #888; font-size: 1.4em; margin-bottom: 50px; letter-spacing: 3px; text-transform: uppercase; font-weight: 300;">
+        Admin Management & AR Memory Portal
+    </p>
+
+    <div class="control" style="max-width: 300px; margin: 0 auto;">
+        <a href="{{ url_for('auth.login') }}" class="btn block-cube block-cube-hover" style="text-decoration: none; display: block;">
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="text" style="font-weight: bold; font-size: 1.2em; letter-spacing: 1px;">
+                START GENERATING
+            </div>
+        </a>
+    </div>
+
+    <div style="margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+        <p style="color: #888; font-size: 0.9em; line-height: 1.8; max-width: 500px; margin: 0 auto;">
+            This project facilitates Generation and Management of AR models and materials. 
+            Use the sidebar to navigate.
+        </p>
+    </div>
+</div>
+
+<style>
+    .hero-welcome {
+        /* Massive Font Size */
+        font-size: 7em; 
+        font-weight: 900;
+        letter-spacing: 15px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        
+        /* White Neon Glow Styling */
+        color: #fff;
+        background: linear-gradient(to bottom, #ffffff 30%, #777777 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        
+        /* Multi-layered glow for extra punch */
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.4)) 
+                drop-shadow(0 0 30px rgba(255,255,255,0.1));
+        
+        line-height: 1;
+    }
+
+    /* Responsive scaling for mobile screens */
+    @media (max-width: 768px) {
+        .hero-welcome {
+            font-size: 4em;
+            letter-spacing: 8px;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,9 @@
+Flask
+Flask-Login
+Flask-PyMongo
+dnspython
+python-dotenv
+PyMuPDF
+transformers
+torch
+gunicorn
