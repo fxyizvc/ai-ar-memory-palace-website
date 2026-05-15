@@ -1,7 +1,19 @@
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# --- RECONSTRUCT GOOGLE CREDENTIALS IN PRODUCTION ---
+# Since credentials.json and token.json are ignored in Git and Docker for security,
+# we recreate them from environment variables (Secrets) when running in production.
+if not os.path.exists('credentials.json') and os.environ.get('GOOGLE_CREDENTIALS_JSON'):
+    with open('credentials.json', 'w') as f:
+        f.write(os.environ.get('GOOGLE_CREDENTIALS_JSON'))
+
+if not os.path.exists('token.json') and os.environ.get('GOOGLE_TOKEN_JSON'):
+    with open('token.json', 'w') as f:
+        f.write(os.environ.get('GOOGLE_TOKEN_JSON'))
 
 class Config:
     # A secret key is required for session management
