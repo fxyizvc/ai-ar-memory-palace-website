@@ -21,9 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application code into the container
 COPY . .
 
-# Expose port 8000 for the web server
-EXPOSE 8000
+# Expose port 7860 for the web server (Required by Hugging Face Spaces)
+EXPOSE 7860
 
 # Start the application using Gunicorn (production web server for Flask)
 # We use 1 worker and a high timeout (120s) because AI models take time to run and use lots of memory
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--timeout", "120", "run:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--workers", "1", "--timeout", "120", "run:app"]
