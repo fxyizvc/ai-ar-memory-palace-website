@@ -1,0 +1,58 @@
+name: CI/CD Pipeline to Hugging Face
+
+# This workflow runs every time you push code to the "main" branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # PHASE 3: Continuous Integration (CI) - Automated Testing
+  build-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Linting Tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+        
+    - name: Check for Syntax Errors (Linting)
+      run: |
+        # This checks your code for critical syntax errors before deploying
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  # PHASE 4: Continuous Deployment (CD) - Deploy to Hugging Face
+  deploy:
+    needs: build-and-lint # This job waits for the linting to pass successfully
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # We only deploy when pushing to the main branch
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Required to push git history
+        
+    - name: Deploy to Hugging Face Spaces
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }} # We will set this in GitHub safely
+      run: |
+        # Set up git for the automated robot
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        
+        # NOTE: You will need to replace YOUR_HF_USERNAME and YOUR_SPACE_NAME
+        # once you create your free Hugging Face account!
+        git remote add huggingface https://huggingface.co/spaces/FayizVC/memory-site
+        
+        # Push the code to Hugging Face. Hugging Face's servers will automatically
+        # see your Dockerfile and start building the container!
+        git push --force https://FayizVC:$HF_TOKEN@huggingface.co/spaces/FayizVC/memory-site main
