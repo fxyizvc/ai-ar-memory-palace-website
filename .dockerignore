@@ -1,0 +1,25 @@
+# Ignore Python virtual environments
+venv/
+env/
+.venv/
+
+# Ignore compiled python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore git history
+.git/
+.gitignore
+
+# IMPORTANT: Ignore the .env file so secrets don't end up inside the Docker image
+.env
+
+# Ignore temporary files
+temp/
+*.log
+
+# Ignore local credentials
+credentials.json
+token.json
